@@ -1,35 +1,36 @@
 import pandas as pd
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from bs4 import BeautifulSoup
 import requests
 import re
 from sklearn.model_selection import train_test_split
 
-
+"""
+Takes a csv of player stats and formats it for processing
+"""
 def init_data(filename):
     stats = pd.read_csv(filename, sep=',')
     stats = stats.dropna()
-    X = stats.drop('POS',axis = 1)
+    X = stats.drop('POS', axis=1)
     y = stats['POS']
 
-
-    # Use internally to test models
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01)
 
     sc = StandardScaler()
-    # X_train = sc.fit_transform(X_train)
-    # X_test = sc.fit_transform(X_test)
     X = sc.fit_transform(X_train)
     lc = LabelEncoder()
     y = lc.fit_transform(y_train)
 
     return X, y, sc, lc
 
+
+"""
+Contains formatted data and initializes ML Models
+Can make predictions given a player's name
+"""
 class Model:
 
     def __init__(self, X, y, sc, lc):
@@ -59,16 +60,20 @@ class Model:
         player_str = player_str.replace(' ', '-').lower()
         self.player = player_str
 
-    def get_stats(self, player):
+    def get_stats(self, name, player):
+
+
+
+        # Var used for help with players of same name
         curr_player = 1
         # Stats to track:
         stats_to_track = ["fg2a_per_g", "fg2_pct", "fg3a_per_g", "fg3_pct", 'fta_per_g', 'ft_pct', 'trb_per_g',
                           'ast_per_g',
                           'stl_per_g', 'blk_per_g', 'tov_per_g']
 
+        # Confirm correct college
         while True:
             # Go to college bball stat site
-
             source1 = requests.get(f'https://www.sports-reference.com/cbb/players/{player}-{curr_player}.html').text
             soup1 = BeautifulSoup(source1, features="html.parser")
 
@@ -79,7 +84,7 @@ class Model:
 
             statline = statline.tr
             college = statline.find(attrs={"data-stat": 'school_name'}).text
-            looking = input(f"Is {player} ({college}) who you are looking for (y/n)")
+            looking = input(f"Is {name} ({college}) who you are looking for (y/n)")
             if looking == 'n':
                 curr_player += 1
                 continue
@@ -125,39 +130,19 @@ class Model:
         if self.player == '':
             print(f"Name ('{name}') invalid!")
             return
-        stats = self.get_stats(self.player)
+        stats = self.get_stats(self.name, self.player)
         if stats is None:
-            print(f"Couldn't find ({self.player}'s) stats!")
+            print(f"Couldn't find ({self.name}'s) stats!")
             return
         stats = self.sc.transform([stats])
         # RFC
         pred_rfc = self.rfc.predict(stats)
 
-        print(f'The Random Forest Classifier predicts that {self.player} will be a: {self.lc.inverse_transform(pred_rfc)[0]}')
+        print(
+            f'The Random Forest Classifier predicts that {self.player} will be a: ' +
+            f'{self.lc.inverse_transform(pred_rfc)[0]}')
         # SVC
         pred_clf = self.clf.predict(stats)
-        print(f'The Support Vector Classifier predicts that {self.player} will be a: {self.lc.inverse_transform(pred_clf)[0]}')
-        # NN
-        # pred_nn = self.mlpc.predict(stats)
-        # print(f'The Neural Network predicts that {self.player} will be a: {position[pred_nn]}')
-
-
-# init_data('player_stats3.csv')
-#
-# rfc = RandomForestClassifier(n_estimators=200)
-# rfc.fit(X_train, y_train)
-# pred_rfc = rfc.predict(X_test)
-#
-# print(classification_report(y_test,pred_rfc))
-#
-# clf = SVC()
-# clf.fit(X_train,y_train)
-# pred_clf = clf.predict(X_test)
-#
-# print(classification_report(y_test,pred_clf))
-#
-# mlpc = MLPClassifier(hidden_layer_sizes=(12,12,12),max_iter=10000)
-# mlpc.fit(X_train,y_train)
-# pred_mlpc = mlpc.predict(X_test)
-#
-# print(classification_report(y_test,pred_mlpc))
+        print(
+            f'The Support Vector Classifier predicts that {self.player} will be a: ' +
+            f'{self.lc.inverse_transform(pred_clf)[0]}')
