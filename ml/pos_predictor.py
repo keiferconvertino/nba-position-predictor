@@ -11,7 +11,14 @@ from sklearn.model_selection import train_test_split
 """
 Takes a csv of player stats and formats it for processing
 """
-def init_data(filename):
+def init_data(filename, positionless):
+    transform = {
+        'PG': 'G',
+        'SG': 'G',
+        'SF': 'W',
+        'PF': 'W',
+        'C': 'C'
+    }
     stats = pd.read_csv(filename, sep=',')
     stats = stats.dropna()
     X = stats.drop('POS', axis=1)
@@ -22,6 +29,8 @@ def init_data(filename):
     sc = StandardScaler()
     X = sc.fit_transform(X_train)
     lc = LabelEncoder()
+    if positionless:
+        y_train = [transform[i] for i in y_train]
     y = lc.fit_transform(y_train)
 
     return X, y, sc, lc
@@ -128,11 +137,11 @@ class Model:
     def predict(self, name):
         self.name_format(name)
         if self.player == '':
-            print(f"Name ('{name}') invalid!")
+            print(f"Please type in a player's name!")
             return
-        stats = self.get_stats(self.name, self.player)
+        stats = self.get_stats(name, self.player)
         if stats is None:
-            print(f"Couldn't find ({self.name}'s) stats!")
+            print(f"Couldn't find ({name}'s) stats!")
             return
         stats = self.sc.transform([stats])
         # RFC

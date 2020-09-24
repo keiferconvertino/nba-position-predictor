@@ -3,9 +3,6 @@ import requests
 import csv
 import io
 
-
-
-
 def get_players(years):
     player_list = []
     with io.open('player_list.csv', 'w', newline='', encoding="utf-8") as csv_file:
@@ -31,8 +28,3 @@ def get_players(years):
                 else:
                     continue
         csv_file.close()
-
-
-# years=[2005,2019]
-#
-# get_players(years)
