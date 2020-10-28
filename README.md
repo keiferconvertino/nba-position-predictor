@@ -11,3 +11,7 @@ future position in the NBA
 
 # Instructions
 Run main.py and follow the instructions given in the command line.
+
+# Demo
+
+![Demo](demo/nba-position-predictor-demo.png)
