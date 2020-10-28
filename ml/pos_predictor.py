@@ -93,7 +93,7 @@ class Model:
 
             statline = statline.tr
             college = statline.find(attrs={"data-stat": 'school_name'}).text
-            looking = input(f"Is {name} ({college}) who you are looking for (y/n)")
+            looking = input(f"Is {name} ({college}) who you are looking for? (y/n):")
             if looking == 'n':
                 curr_player += 1
                 continue
@@ -147,11 +147,13 @@ class Model:
         # RFC
         pred_rfc = self.rfc.predict(stats)
 
+        print('\nPredictions:\n')
+
         print(
-            f'The Random Forest Classifier predicts that {self.player} will be a: ' +
-            f'{self.lc.inverse_transform(pred_rfc)[0]}')
+            f'The Random Forest Classifier predicts that {name} will be a: ' +
+            f'{self.lc.inverse_transform(pred_rfc)[0]}\n')
         # SVC
         pred_clf = self.clf.predict(stats)
         print(
-            f'The Support Vector Classifier predicts that {self.player} will be a: ' +
-            f'{self.lc.inverse_transform(pred_clf)[0]}')
+            f'The Support Vector Classifier predicts that {name} will be a: ' +
+            f'{self.lc.inverse_transform(pred_clf)[0]}\n')
